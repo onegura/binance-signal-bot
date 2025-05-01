@@ -1,14 +1,14 @@
-
 import requests
 import time
 import datetime
 import pytz
 import numpy as np
+import os
 import telegram
 
-# --- 사용자 설정 ---
-TELEGRAM_TOKEN = "8027865821:AAHsX1wOaH2MFHetZRqg65aNWv9JDqSdIvo"
-TELEGRAM_CHAT_ID = "5888953708"
+# --- 사용자 설정 (Secrets에서 불러오기) ---
+TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
+TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 # --- 초기 설정 ---
 binance_url = "https://api.binance.com"
@@ -31,7 +31,7 @@ def calculate_rsi(closes, period=14):
     rsi = 100 - (100 / (1 + rs))
     return np.concatenate((np.full(period, np.nan), rsi))
 
-# 바이낸스에서 USDT 마켓 코인 리스트 가져오기
+# 바이낸스 USDT 마켓 코인 리스트 가져오기
 def get_usdt_symbols():
     res = session.get(f"{binance_url}/api/v3/exchangeInfo")
     symbols = []
@@ -120,14 +120,5 @@ def run():
 
     print("시그널 체크 완료")
 
-# 매일 오전 9시에 실행되도록 대기
-def wait_until_9am():
-    while True:
-        now = datetime.datetime.now(kst)
-        if now.hour == 9 and now.minute == 0:
-            run()
-            time.sleep(60)  # 1분 대기 (중복 실행 방지)
-        time.sleep(10)
-
 if __name__ == "__main__":
-    wait_until_9am()
+    run()
